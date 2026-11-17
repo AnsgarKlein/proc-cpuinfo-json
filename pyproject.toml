@@ -1,0 +1,44 @@
+[tool.mypy]
+# Enable incremental mode using cache directory
+incremental = true
+
+# Enable all optional error checking flags
+strict = true
+
+# Use nicer output in error messages
+pretty = true
+
+# Use color in error messages
+color_output = true
+
+
+# Warn about casting expression to its inferred type
+warn_redundant_casts = true
+
+# Warn about unneeded "# type: ignore" comments
+warn_unused_ignores = true
+
+# Warn about missing return statements
+warn_no_return = true
+
+# Warn when returning "Any" from function declared with non-Any
+warn_return_any = true
+
+# Warn about unreachable code
+warn_unreachable = true
+
+
+
+[tool.ruff]
+target-version = "py37"
+
+[tool.ruff.lint.isort]
+force-single-line = true
+lines-after-imports = 2
+
+[tool.ruff.lint]
+ignore = [
+    "FA100",  # Ignore "future-rewritable-type-annotation"
+]
+
+# vim: ts=4:sw=4:et
