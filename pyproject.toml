@@ -32,13 +32,14 @@ warn_unreachable = true
 [tool.ruff]
 target-version = "py37"
 
+[tool.ruff.lint]
+ignore = [
+    # Ignore "future-rewritable-type-annotation", because of Python 3.6
+    "FA100"
+]
+
 [tool.ruff.lint.isort]
 force-single-line = true
 lines-after-imports = 2
-
-[tool.ruff.lint]
-ignore = [
-    "FA100",  # Ignore "future-rewritable-type-annotation"
-]
 
 # vim: ts=4:sw=4:et
