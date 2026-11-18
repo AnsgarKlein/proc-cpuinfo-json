@@ -29,13 +29,14 @@ This script reads /proc/cpuinfo and converts it into a JSON-serializable format.
 import argparse
 import json
 import os
+import re
 import sys
 from typing import Dict
 from typing import List
 from typing import Union
 
 
-JsonCpuValue = Union[str, List[str]]
+JsonCpuValue = Union[str, List[str], Dict[str, str]]
 
 
 def parse_cpu_block(cpu_block: str) -> Dict[str, JsonCpuValue]:
@@ -56,16 +57,47 @@ def parse_cpu_block(cpu_block: str) -> Dict[str, JsonCpuValue]:
         value = value.strip()
 
         if key == 'flags' or key == 'bugs':
-            cpu_data[key] = value.split() if value != '' else []
+            cpu_data[key] = parse_cpuinfo_field_to_list_by_whitespace(value)
+        elif key == 'address sizes':
+            # Try to split, but fall back to raw string
+            try:
+                cpu_data[key] = parse_cpuinfo_field_address_sizes(value)
+            except ValueError:
+                print(f'Warning: Failed to parse address sizes: {value}', file=sys.stderr)
+                cpu_data[key] = value
         else:
             cpu_data[key] = value
 
     return cpu_data
 
-def split_cpuinfo_field_to_list(field_value: str) -> List[str]:
-    """Split a space-separated /proc/cpuinfo field into a list of strings."""
+def parse_cpuinfo_field_to_list_by_whitespace(field_value: str) -> List[str]:
+    """Parse a space-separated /proc/cpuinfo field as a list of strings."""
 
     return field_value.split(' ') if field_value else []
+
+def parse_cpuinfo_field_address_sizes(field_value: str) -> Dict[str, str]:
+    """Parse "address sizes" field of /proc/cpuinfo as a dictionary."""
+
+    if field_value == '':
+        return {}
+
+    # Split field into parts by comma
+    parts = [part.strip() for part in field_value.split(',') if part.strip() != '']
+
+    # Match every part with regular expression and extract key and value
+    address_sizes: Dict[str, str] = {}
+    pattern = re.compile(r'^(\d+\s+bits\s+)(physical|virtual)$')
+    for part in parts:
+        match = pattern.match(part.lower())
+
+        if match is None or len(match.groups()) != 2:
+            raise ValueError(f'Invalid address sizes part: {part}')
+
+        key = match.group(2).strip()
+        value = match.group(1).strip()
+        address_sizes[key] = value
+
+    return address_sizes
 
 def split_cpuinfo_by_cpu(cpuinfo_text: str) -> List[str]:
     """Split /proc/cpuinfo content into one text block per CPU."""
