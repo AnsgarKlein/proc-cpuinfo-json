@@ -35,7 +35,9 @@ target-version = "py37"
 [tool.ruff.lint]
 ignore = [
     # Ignore "future-rewritable-type-annotation", because of Python 3.6
-    "FA100"
+    "FA100",
+    # Don't use `capture_output` in subprocess.run because of Python 3.6
+    "UP022",
 ]
 
 [tool.ruff.lint.isort]
